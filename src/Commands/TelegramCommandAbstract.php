@@ -149,9 +149,9 @@ abstract class TelegramCommandAbstract
      * @param bool $inlcudeCharacter
      * @return string
      */
-    protected function getCommandName(bool $inlcudeCharacter = false): string
+    public function getCommandName(bool $includeCharacter = false): string
     {
-        if ($inlcudeCharacter)
+        if ($includeCharacter)
             return config('telehook.character_command') . $this->command;
 
         return $this->command;
