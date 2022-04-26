@@ -2,7 +2,7 @@
     "name": "vanloctech/telehook",
     "description": "Telegram Webhook - Laravel package for Webhook handle commands on telegram",
     "keywords": ["Telegram", "webhook", "laravel", "telehook", "laravel-telegram"],
-    "type": "project",
+    "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
