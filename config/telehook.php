@@ -126,6 +126,8 @@ return [
     'commands' => [
         HelpTelegramCommand::class,
         ExampleTelegramCommand::class,
+
+        // add more your command
     ],
 
 ];
