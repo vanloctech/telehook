@@ -1,0 +1,35 @@
+{
+    "name": "vanloctech/telehook",
+    "description": "Telegram Webhook - Laravel package for Webhook handle commands on telegram",
+    "keywords": ["Telegram", "webhook", "laravel", "telehook"],
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Vanloctech\\Telehook\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.2",
+        "ext-json": "*",
+        "irazasyed/telegram-bot-sdk": "^2.0"
+    },
+    "authors": [
+        {
+            "name": "Loc Nguyen",
+            "email": "vanloctech@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Vanloctech\\Telehook\\TelechookServiceProvider",
+            ],
+            "aliases": {
+                "Telehook": "Vanloctech\\Telehook\\Facades\\TelechookFacade"
+            }
+        }
+    },
+    "minimum-stability": "dev"
+}

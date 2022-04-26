@@ -1,0 +1,40 @@
+<?php
+
+namespace DummyNamespace;
+
+use Vanloctech\Telehook\Commands\TelegramCommandAbstract;
+
+class DummyClass extends TelegramCommandAbstract
+{
+    /**
+     * Name of command
+     * Example command /hello, command name is hello
+     *
+     * @var string
+     */
+    protected $command = 'DummyCommand';
+
+
+    /**
+     * Description detail for command
+     *
+     * @var string
+     */
+    protected $description = 'Description for command';
+
+    /**
+     * Argument list
+     * @var array
+     */
+    protected $args = [];
+
+    /**
+     * Execute the command
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        //
+    }
+}
