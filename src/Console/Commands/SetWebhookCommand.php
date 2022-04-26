@@ -43,7 +43,8 @@ class SetWebhookCommand extends Command
         if ($response['ok']) {
             $telehook->telegram->setWebhook(config('telehook.set_webhook'));
 
-            $this->info('set webhook successfully.');
+            $this->info('Your URI webhook: ' . config('telehook.set_webhook.url'));
+            $this->info('Set webhook successfully.');
 
             return 0;
         }

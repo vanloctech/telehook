@@ -105,11 +105,11 @@ trait TelehookApiTrait
                 'json' => $data,
             ]);
 
-            return json_decode((string)$response->getBody());
+            return json_decode((string)$response->getBody(), true);
         } catch (ClientException $exception) {
             logs()->error($exception->getTraceAsString());
 
-            return json_decode($exception->getResponse());
+            return json_decode($exception->getResponse(), true);
         }
     }
 
@@ -127,10 +127,10 @@ trait TelehookApiTrait
                 'json' => $params,
             ]);
 
-            return json_decode((string)$response->getBody());
+            return json_decode((string)$response->getBody(), true);
         } catch (ClientException $exception) {
             logs()->error($exception->getTraceAsString());
-            return json_decode($exception->getResponse());
+            return json_decode($exception->getResponse(), true);
         }
     }
 
@@ -148,10 +148,10 @@ trait TelehookApiTrait
                 'json' => $params,
             ]);
 
-            return json_decode((string)$response->getBody());
+            return json_decode((string) $response->getBody(), true);
         } catch (ClientException $exception) {
             logs()->error($exception->getTraceAsString());
-            return json_decode($exception->getResponse());
+            return json_decode($exception->getResponse(), true);
         }
     }
 }
