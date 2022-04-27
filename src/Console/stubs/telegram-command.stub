@@ -9,6 +9,7 @@ class DummyClass extends TelegramCommandAbstract
     /**
      * Name of command
      * Example command /hello, command name is hello
+     * Command required lower string
      *
      * @var string
      */

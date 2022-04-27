@@ -3,6 +3,7 @@
 namespace Vanloctech\Telehook\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use Vanloctech\Telehook\Telehook;
 
 class SetMenuTelegramCommand extends Command
@@ -43,6 +44,11 @@ class SetMenuTelegramCommand extends Command
 
         foreach ($commands as $class) {
             $classHandle = new $class();
+            if ($classHandle->getCommandName() != Str::lower($classHandle->getCommandName())) {
+                $this->error('Command name required is lower string.');
+                $this->error($classHandle->getCommandName() . ' is not lower');
+                return 0;
+            }
             $commandSet[] = [
                 'command' => $classHandle->getCommandName(),
                 'description' => $classHandle->getDescription(),
