@@ -20,8 +20,8 @@ class HelpTelegramCommand extends TelegramCommandAbstract
 
         foreach ($commands as $class) {
             $classHandle = new $class();
-            $message .= $classHandle->getCommandName(true) . ' - ' .
-                implode(' ', $classHandle->getArgs()) .
+            $message .= $classHandle->getCommandName(true) . ' ' .
+                implode(' ', $classHandle->getArgs()) . ' - ' .
                 $classHandle->getDescription() . " \n ";
         }
 

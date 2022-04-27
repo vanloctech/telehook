@@ -41,12 +41,17 @@ class SetWebhookCommand extends Command
         $telehook = Telehook::init();
         $response = $telehook->deleteWebhook();
         if ($response['ok']) {
-            $telehook->telegram->setWebhook(config('telehook.set_webhook'));
+            $response = $telehook->telegram->setWebhook(config('telehook.set_webhook'));
 
-            $this->info('Your URI webhook: ' . config('telehook.set_webhook.url'));
-            $this->info('Set webhook successfully.');
+            if ($response['ok']) {
+                $this->info('Your URI webhook: ' . config('telehook.set_webhook.url'));
+                $this->info('Set webhook successfully.');
 
-            return 0;
+                return 0;
+            }
+
+            $this->error('Set webhook failed.');
+            $this->error(json_encode($response));
         }
 
         $this->error('Cannot delete webhook.');

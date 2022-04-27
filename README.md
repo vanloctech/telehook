@@ -2,6 +2,10 @@
 
 _Telegram bot command for Laravel_
 
+## Requirement
+- Laravel framework >= 5.8
+- PHP >= 7.2
+
 ## Reporting Issues
 
 If you do find an issue, please feel free to report it with [GitHub's bug tracker](https://github.com/spatie/laravel-fractal/issues) for this project.
@@ -12,20 +16,12 @@ Alternatively, fork the project and make a pull request :)
 
 Install package
 ```shell
-    composer require vanloctech/telehook
+composer require vanloctech/telehook
 ```
 
 Publish config file `telehook.php` for project
 ```shell
-    php artisan vendor:publish --provider="Vanloctech\Telehook\TelehookServiceProvider"
-```
-
-Once you've run a `composer update`, you need to register Laravel service provider, in your `config/app.php`:
-```php
-'providers' => [
-    ...
-    \Vanloctech\Telehook\TelehookServiceProvider::class,
-],
+php artisan vendor:publish --provider="Vanloctech\Telehook\TelehookServiceProvider"
 ```
 
 We also provide a facade for elasticsearch-php client (which has connected using our settings), add following to your `config/app.php` if you need so.
@@ -88,5 +84,40 @@ Use more function with `telegram` property
 Telehook::init()->telegram->sendPhoto(...);
 Telehook::init()->telegram->sendDocument(...);
 # and more function support call api, referer: https://github.com/irazasyed/telegram-bot-sdk
+```
+
+Can set webhook with information setup in `config/telehook.php`:
+```php
+    /*
+    |--------------------------------------------------------------------------
+    | Set webhook parameters
+    |--------------------------------------------------------------------------
+    |
+    | specify a url and receive incoming updates via an outgoing webhook.
+    | Whenever there is an update for the bot, we will send an HTTPS POST
+    | request to the specified url
+    | You can set webhook through command is
+    | "php artisan telehook:set-webhook"
+    |
+    */
+    'set_webhook' => [
+        'url' => env('APP_URL') . '/' . env('TELEHOOK_TOKEN', '')
+            . '/' . env('TELEHOOK_PATH', 'webhook'),
+//        'certificate' => env('TELEHOOK_CERTIFICATE', ''),
+//        'ip_address' => '',
+//        'max_connections' => '',
+//        'allowed_updates' => '',
+        'drop_pending_updates' => true,
+    ],
+```
+
+And run command to set webhook:
+```shell
+php artisan telehook:set-webhook
+```
+
+Command set menu command (list of bot's command):
+```shell
+php artisan telehook:set-command
 ```
 

@@ -46,7 +46,7 @@ class TelegramCommandMakeCommand extends GeneratorCommand
                 'DummyCommand',
             ],
             [
-                Str::kebab(trim($this->argument('name'))),
+                Str::lower(trim($this->argument('name'))),
             ],
             $stub
         );

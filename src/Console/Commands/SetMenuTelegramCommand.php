@@ -49,9 +49,13 @@ class SetMenuTelegramCommand extends Command
             ];
         }
 
-        if (config('telehook.command_menu', true)) {
-            Telehook::init()->deleteMyCommands();
-            Telehook::init()->setMyCommands($commandSet);
+        Telehook::init()->deleteMyCommands();
+        $response = Telehook::init()->setMyCommands($commandSet);
+        if (!$response['ok']) {
+            $this->error('Set command failed.');
+            $this->error(json_encode($response));
+
+            return 0;
         }
 
         $this->info('Set command successfully.');

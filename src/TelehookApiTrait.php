@@ -62,7 +62,6 @@ trait TelehookApiTrait
             $data['text'] = $message;
 
             $res = [];
-            $client = new Client();
             foreach ($this->chatId as $chatId) {
                 $data['chat_id'] = $chatId;
                 $response = $this->telegram->sendMessage($data);
@@ -90,9 +89,10 @@ trait TelehookApiTrait
      * ]
      *
      * @param $commands
+     * @param array $params
      * @return mixed
      */
-    public function setMyCommands($commands, $params = [])
+    public function setMyCommands($commands, array $params = [])
     {
         try {
             $client = new Client();
@@ -107,7 +107,7 @@ trait TelehookApiTrait
 
             return json_decode((string)$response->getBody(), true);
         } catch (ClientException $exception) {
-            logs()->error($exception->getTraceAsString());
+            logs()->error($exception->getResponse()->getBody());
 
             return json_decode($exception->getResponse(), true);
         }
@@ -116,10 +116,10 @@ trait TelehookApiTrait
     /**
      * Delete the list of the bot's commands
      *
-     * @param $params
+     * @param array $params
      * @return mixed
      */
-    public function deleteMyCommands($params = [])
+    public function deleteMyCommands(array $params = [])
     {
         try {
             $client = new Client();
@@ -129,7 +129,7 @@ trait TelehookApiTrait
 
             return json_decode((string)$response->getBody(), true);
         } catch (ClientException $exception) {
-            logs()->error($exception->getTraceAsString());
+            logs()->error($exception->getResponse()->getBody());
             return json_decode($exception->getResponse(), true);
         }
     }
@@ -137,10 +137,10 @@ trait TelehookApiTrait
     /**
      * Delete the list of the bot's commands
      *
-     * @param $params
+     * @param array $params
      * @return mixed
      */
-    public function deleteWebhook($params = [])
+    public function deleteWebhook(array $params = [])
     {
         try {
             $client = new Client();
@@ -150,7 +150,7 @@ trait TelehookApiTrait
 
             return json_decode((string) $response->getBody(), true);
         } catch (ClientException $exception) {
-            logs()->error($exception->getTraceAsString());
+            logs()->error($exception->getResponse()->getBody());
             return json_decode($exception->getResponse(), true);
         }
     }
