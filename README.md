@@ -8,7 +8,7 @@ _Telegram bot command for Laravel_
 
 ## Reporting Issues
 
-If you do find an issue, please feel free to report it with [GitHub's bug tracker](https://github.com/spatie/laravel-fractal/issues) for this project.
+If you do find an issue, please feel free to report it with [GitHub's bug tracker](https://github.com/vanloctech/telehook/issues) for this project.
 
 Alternatively, fork the project and make a pull request :)
 
@@ -24,6 +24,21 @@ Publish config file `telehook.php` for project
 php artisan vendor:publish --provider="Vanloctech\Telehook\TelehookServiceProvider"
 ```
 
+Execute command in schedule for run every minute to stop conversation exceed the time limit
+```php
+// in app/Console/Kernel.php
+
+// ...
+
+protected function schedule(Schedule $schedule)
+{
+    // ...
+    $schedule->command('telehook:stop-conversation')->everyMinute();
+}
+
+// ...
+```
+
 We also provide a facade for elasticsearch-php client (which has connected using our settings), add following to your `config/app.php` if you need so.
 ```php
 'aliases' => [
@@ -35,54 +50,57 @@ We also provide a facade for elasticsearch-php client (which has connected using
 ## Usage
 Create telegram command
 ```shell
-php artisan make:telegram-command <Command Name>
-# Ex: php artisan make:telegram-command HelloWorld
+php artisan make:telehook-command <Command Name>
+# Ex: php artisan make:telehook-command HelloWorld
 ```
 
-Override code in handle function
+Override code in `finish` function
 ```php
-use \Vanloctech\Telehook\Telehook;
+<?php
 
-class HelloWorldTelegramCommand extends TelegramCommandAbstract
+namespace App\TelehookCommand;
+
+use Vanloctech\Telehook\Commands\TelehookCommand;
+
+class HelloWorldTelehookCommand extends TelehookCommand
 {
     ...
 
     /**
-     * Execute the command
+     * Execute when prepare finish conversation
      *
      * @return void
      */
-    public function handle()
+    public function finish()
     {
-        // handle code when get message here
-        // something your code
-        // Ex: this below code will send message <b>Welcome to my bot chat</b> for chatId sent message
-        Telehook::init($this->getChatId())->sendMessage('<b>Welcome to my bot chat</b>');
+        // TODO: Implement finish() method.
     }
 }
+
 ```
 
 Add command into telehook config file `config/telehook.php`
+
 ```php
 // config/telehook.php
     'commands' => [
-        HelpTelegramCommand::class,
+        HelpTelehookCommand::class,
         ...
         
         // add more your command
-        \App\TelegramCommand\HelloWorldTelegramCommand::class
+        \App\TelegramCommand\HelloWorldTelehookCommand::class
     ],
 ```
 
 using Telehook for send message for multiple chatId
 ```php
-Telehook::init()->setChatId('custom array chat id')->sendMessages('your text');
+Telehook::init()->setChatId(['custom array chat id'])->sendMessages('your text');
 ```
 
-Use more function with `telegram` property
+Use more function with `telegramApi` property
 ```php
-Telehook::init()->telegram->sendPhoto(...);
-Telehook::init()->telegram->sendDocument(...);
+Telehook::init()->telegramApi->sendPhoto(...);
+Telehook::init()->telegramApi->sendDocument(...);
 # and more function support call api, referer: https://github.com/irazasyed/telegram-bot-sdk
 ```
 

@@ -4,7 +4,9 @@ namespace Vanloctech\Telehook\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Vanloctech\Telehook\Commands\StopTelehookCommand;
 use Vanloctech\Telehook\Telehook;
+use Vanloctech\Telehook\TelehookSupport;
 
 class SetMenuTelegramCommand extends Command
 {
@@ -39,11 +41,13 @@ class SetMenuTelegramCommand extends Command
      */
     public function handle()
     {
-        $commands = config('telehook.commands') ?? [];
+        $commands = TelehookSupport::getConfig('commands', []);
+        $stopClass = TelehookSupport::getConfig('stop', StopTelehookCommand::class);
+        $commands[] = $stopClass;
         $commandSet = [];
 
         foreach ($commands as $class) {
-            $classHandle = new $class();
+            $classHandle = new $class(null);
             if ($classHandle->getCommandName() != Str::lower($classHandle->getCommandName())) {
                 $this->error('Command name required is lower string.');
                 $this->error($classHandle->getCommandName() . ' is not lower');

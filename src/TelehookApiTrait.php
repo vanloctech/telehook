@@ -44,7 +44,7 @@ trait TelehookApiTrait
             $data['chat_id'] = $this->chatId;
             $data['text'] = $message;
 
-            return $this->telegram->sendMessage($data);
+            return $this->telegramApi()->sendMessage($data);
         }
 
         return false;
@@ -64,7 +64,7 @@ trait TelehookApiTrait
             $res = [];
             foreach ($this->chatId as $chatId) {
                 $data['chat_id'] = $chatId;
-                $response = $this->telegram->sendMessage($data);
+                $response = $this->telegramApi()->sendMessage($data);
 
                 $res[] = $response;
             }

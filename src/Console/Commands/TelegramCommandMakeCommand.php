@@ -13,30 +13,30 @@ class TelegramCommandMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $signature = 'make:telegram-command {name}';
+    protected $signature = 'make:telehook {name}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new telegram command class';
+    protected $description = 'Create a new telehook command class';
 
-    protected $type = 'TelegramCommand';
+    protected $type = 'TelehookCommand';
 
     protected function getNameInput(): string
     {
-        return trim($this->argument('name')) . 'TelegramCommand';
+        return trim($this->argument('name')) . 'TelehookCommand';
     }
 
     protected function getStub(): string
     {
-        return __DIR__ . '/../stubs/telegram-command.stub';
+        return __DIR__ . '/../stubs/telehook-command.stub';
     }
 
     protected function getDefaultNamespace($rootNamespace): string
     {
-        return $rootNamespace . '\TelegramCommand';
+        return $rootNamespace . '\TelehookCommand';
     }
 
     protected function replaceNamespace(&$stub, $name)

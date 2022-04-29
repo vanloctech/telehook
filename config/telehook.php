@@ -1,8 +1,9 @@
 <?php
 
-use Vanloctech\Telehook\Commands\DefaultTelegramCommand;
-use Vanloctech\Telehook\Commands\ExampleTelegramCommand;
-use Vanloctech\Telehook\Commands\HelpTelegramCommand;
+use Vanloctech\Telehook\Commands\DefaultTelehookCommand;
+use Vanloctech\Telehook\Commands\ExampleTelehookCommand;
+use Vanloctech\Telehook\Commands\HelpTelehookCommand;
+use Vanloctech\Telehook\Commands\StopTelehookCommand;
 
 return [
 
@@ -43,17 +44,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Character of command
-    |--------------------------------------------------------------------------
-    |
-    | You can use any character to define it as a command when the user sends a message
-    | Recommend use "/"
-    |
-    */
-    'character_command' => '/',
-
-    /*
-    |--------------------------------------------------------------------------
     | Set webhook parameters
     |--------------------------------------------------------------------------
     |
@@ -84,7 +74,17 @@ return [
     | You can use "{command}" for represent the name of command
     |
     */
-    'unknown_message' => 'Unknown command, try /help to see a list of commands',
+    'unknown_message' => 'Unknown {command} command, try /help to see a list of commands {command}',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Busy message
+    |--------------------------------------------------------------------------
+    |
+    | Message response when exception throw
+    |
+    */
+    'busy_message' => 'Webhook is busy',
 
     /*
     |--------------------------------------------------------------------------
@@ -96,18 +96,48 @@ return [
     | You can use "{command}" for represent the name of command
     |
     */
-    'missing_args_message' => 'Argument in command {command} is missing, try /help to see a list of commands',
+    'doesnt_support_chat_type_message' => 'Bot doesn\'t support chat from "group" and "channel"',
 
     /*
     |--------------------------------------------------------------------------
-    | Class handle not command
+    | Class handle unknown command, doesn't support chat type
     |--------------------------------------------------------------------------
     |
     | Here you can define the class to handle when a message
     | other than a command is sent
+    | Inheritance class TelehookCommand and override 'unknown' function
+    |
+    | And handle chat type doesn't support.
+    | Currently, only support 'private' chat type
+    | Inheritance class TelehookCommand and override 'doesntSupportChatType' function
     |
     */
-    'default' => DefaultTelegramCommand::class,
+    'default' => DefaultTelehookCommand::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Class handle stop command
+    |--------------------------------------------------------------------------
+    |
+    | here you can define a class to handle when the stop command is sent
+    | while in conversation
+    | Inheritance class TelehookCommand and override 'stop' function
+    |
+    */
+    'stop' => StopTelehookCommand::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Limited time of conversation
+    |--------------------------------------------------------------------------
+    |
+    | When the chat exceeds the allotted time,
+    | it will be moved to the "stop" state
+    | By default, the limited time for ten minute.
+    | unit use is "minute"
+    |
+    */
+    'limited_time_conversation' => 10,
 
     /*
     |--------------------------------------------------------------------------
@@ -124,8 +154,8 @@ return [
     |
     */
     'commands' => [
-        HelpTelegramCommand::class,
-        ExampleTelegramCommand::class,
+        HelpTelehookCommand::class,
+        ExampleTelehookCommand::class,
 
         // add more your command
     ],

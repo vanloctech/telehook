@@ -4,9 +4,14 @@ namespace Vanloctech\Telehook\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Vanloctech\Telehook\Commands\DefaultTelegramCommand;
+use Illuminate\Routing\Controller;
+use Telegram\Bot\Objects\Message;
+use Vanloctech\Telehook\Commands\DefaultTelehookCommand;
+use Vanloctech\Telehook\Commands\StopTelehookCommand;
+use Vanloctech\Telehook\Models\TelehookConversation;
+use Vanloctech\Telehook\TelehookSupport;
 
-class TelehookController
+class TelehookController extends Controller
 {
     /**
      * @param Request $request
@@ -14,66 +19,64 @@ class TelehookController
      */
     public function __invoke(Request $request): JsonResponse
     {
-        $characterOfCommand = config('telehook.character_command');
-        $commands = config('telehook.commands');
+        try {
+            $commands = TelehookSupport::getConfig('commands', []);
+            $defaultClass = TelehookSupport::getConfig('default', DefaultTelehookCommand::class);
+            $stopClass = TelehookSupport::getConfig('stop', StopTelehookCommand::class);
 
-        $data = $request->all();
+            logs('daily')->debug(json_encode($request->all()));
+            $message = new Message($request->get('message'));
 
-        logs('daily')->debug(json_encode($data));
-        if (empty($data['message'])) {
-            // todo: handle for group with "my_chat_member"
-            return $this->responseSuccess();
-        }
-
-        if (empty($data['message']['text'])) {
-            // message with "group_chat_created"
-            return $this->responseSuccess();
-        }
-
-        $message = $data['message']['text'];
-        $chatId = $data['message']['chat']['id'];
-        $args = explode(' ', trim($data['message']['text']));
-
-        if ($args[0][0] != $characterOfCommand) {
-            $commandClass = new DefaultTelegramCommand($chatId);
-            $commandClass->handle();
-            return $this->responseSuccess();
-        }
-
-        $command = ltrim(array_shift($args), $characterOfCommand);
-
-        $commandClass = null;
-        foreach ($commands as $class) {
-            $classHandle = new $class($chatId);
-            if ($classHandle->getCommandName() == $command) {
-                $commandClass = $classHandle;
-                break;
+            if (!TelehookSupport::checkMessageDoesntSupport($message)) {
+                return $this->responseSuccess();
             }
-        }
 
-        if (empty($commandClass)) {
-            $commandClass = new DefaultTelegramCommand($chatId);
-            $commandClass->unknown();
+            $commandClass = null;
+            $command = ltrim($message->text, '/');
+
+            if (!$message->hasCommand() || !empty($commandClass = TelehookSupport::checkCommandName($stopClass, $command, $message))) {
+                $conversation = TelehookConversation::query()
+                    ->where('chat_id', $message->chat->id)
+                    ->whereIn('status', TelehookConversation::statusChatting())
+                    ->latest()
+                    ->first();
+
+                if ($conversation) {
+                    if (!empty($commandClass)) {
+                        $commandClass->setIsStop(true);
+                    } else {
+                        $commandClass = $conversation->command_class;
+                        $commandClass = new $commandClass($message);
+                    }
+                    $commandClass->setConversation($conversation);
+                } else {
+                    $commandClass = new $defaultClass($message);
+                    $commandClass->unknown();
+                    return $this->responseSuccess();
+                }
+            } else {
+                foreach ($commands as $class) {
+                    if (!empty($commandClass = TelehookSupport::checkCommandName($class, $command, $message))) {
+                        break;
+                    }
+                }
+            }
+
+            if (empty($commandClass)) {
+                // todo: handle unknown command
+                $commandClass = new $defaultClass($message);
+                $commandClass->unknown();
+                return $this->responseSuccess();
+            }
+
+            $commandClass->handle();
+
+            return $this->responseSuccess();
+        } catch (\Throwable $exception) {
+            report($exception);
+
             return $this->responseSuccess();
         }
-
-        $argsRequire = $commandClass->getArgs(true);
-        $commandClass->setData($data);
-        $commandClass->setMessage($message);
-        $commandClass->setChatId($chatId);
-
-        // check missing argument
-        if (count($args) < count($argsRequire)) {
-            $commandClass->missingArgs();
-            return $this->responseSuccess();
-        }
-
-        $commandClass->setArgs($args);
-
-        $commandClass->handle();
-
-        return $this->responseSuccess();
-
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Vanloctech\Telehook\Console\Commands;
 
 use Illuminate\Console\Command;
 use Vanloctech\Telehook\Telehook;
+use Vanloctech\Telehook\TelehookSupport;
 
 class SetWebhookCommand extends Command
 {
@@ -41,17 +42,20 @@ class SetWebhookCommand extends Command
         $telehook = Telehook::init();
         $response = $telehook->deleteWebhook();
         if ($response['ok']) {
-            $response = $telehook->telegram->setWebhook(config('telehook.set_webhook'));
+            try {
+                $telehook->telegramApi()->setWebhook(TelehookSupport::getConfig('set_webhook'));
 
-            if ($response['ok']) {
-                $this->info('Your URI webhook: ' . config('telehook.set_webhook.url'));
+                $this->info('Your URI webhook: ' . TelehookSupport::getConfig('set_webhook.url'));
                 $this->info('Set webhook successfully.');
 
                 return 0;
-            }
+            } catch (\Exception $exception) {
 
-            $this->error('Set webhook failed.');
-            $this->error(json_encode($response));
+                $this->error('Set webhook failed.');
+                $this->error($response->getBody());
+
+                return 0;
+            }
         }
 
         $this->error('Cannot delete webhook.');

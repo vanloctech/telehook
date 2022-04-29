@@ -4,7 +4,7 @@ namespace Vanloctech\Telehook\Exceptions;
 
 use Exception;
 
-class TokenEmptyException extends Exception
+class TelehookTokenEmptyException extends Exception
 {
 
 }

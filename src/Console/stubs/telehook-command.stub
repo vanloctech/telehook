@@ -2,9 +2,9 @@
 
 namespace DummyNamespace;
 
-use Vanloctech\Telehook\Commands\TelegramCommandAbstract;
+use Vanloctech\Telehook\Commands\TelehookCommand;
 
-class DummyClass extends TelegramCommandAbstract
+class DummyClass extends TelehookCommand
 {
     /**
      * Name of command
@@ -24,18 +24,12 @@ class DummyClass extends TelegramCommandAbstract
     protected $description = 'Description for command';
 
     /**
-     * Argument list
-     * @var array
-     */
-    protected $args = [];
-
-    /**
-     * Execute the command
+     * Execute when prepare finish conversation
      *
      * @return void
      */
-    public function handle()
+    public function finish()
     {
-        //
+        // TODO: Implement finish() method for DummyCommand command.
     }
 }

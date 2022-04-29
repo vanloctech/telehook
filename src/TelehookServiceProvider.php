@@ -4,6 +4,7 @@ namespace Vanloctech\Telehook;
 
 use Illuminate\Support\ServiceProvider;
 use Vanloctech\Telehook\Console\Commands\SetMenuTelegramCommand;
+use Vanloctech\Telehook\Console\Commands\StopTelehookConversationCommand;
 use Vanloctech\Telehook\Console\Commands\TelegramCommandMakeCommand;
 use Vanloctech\Telehook\Console\Commands\SetWebhookCommand;
 
@@ -16,16 +17,9 @@ class TelehookServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->publishConfigs();
         $this->registerRoutes();
-
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                TelegramCommandMakeCommand::class,
-                SetMenuTelegramCommand::class,
-                SetWebhookCommand::class,
-            ]);
-        }
+        $this->registerMigrations();
+        $this->registerPublishing();
     }
 
     /**
@@ -35,6 +29,11 @@ class TelehookServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/telehook.php', 'telehook'
+        );
+        $this->registerCommands();
+
         $this->app->singleton('telehook', function () {
             return new Telehook();
         });
@@ -44,15 +43,50 @@ class TelehookServiceProvider extends ServiceProvider
         );
     }
 
-    protected function publishConfigs(): void
-    {
-        $this->publishes([
-            __DIR__ . '/../config/telehook.php' => config_path('telehook.php'),
-        ]);
-    }
-
     protected function registerRoutes(): void
     {
         $this->loadRoutesFrom(realpath(__DIR__ . '/Http/routes/telehook-routes.php'));
+    }
+
+    /**
+     * Register the package's migrations.
+     *
+     * @return void
+     */
+    private function registerMigrations()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->loadMigrationsFrom(__DIR__.'/Database/migrations');
+        }
+    }
+
+    private function registerCommands()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                TelegramCommandMakeCommand::class,
+                SetMenuTelegramCommand::class,
+                SetWebhookCommand::class,
+                StopTelehookConversationCommand::class,
+            ]);
+        }
+    }
+
+    /**
+     * Register the package's publishable resources.
+     *
+     * @return void
+     */
+    private function registerPublishing()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/Database/migrations' => database_path('migrations'),
+            ], 'telehook-migrations');
+
+            $this->publishes([
+                __DIR__.'/../config/telehook.php' => config_path('telehook.php'),
+            ], 'telehook-config');
+        }
     }
 }
