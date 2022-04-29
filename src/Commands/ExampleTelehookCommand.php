@@ -2,8 +2,6 @@
 
 namespace Vanloctech\Telehook\Commands;
 
-use Vanloctech\Telehook\Models\TelehookConversation;
-use Vanloctech\Telehook\Models\TelehookConversationDetail;
 use Vanloctech\Telehook\Telehook;
 
 class ExampleTelehookCommand extends TelehookCommand

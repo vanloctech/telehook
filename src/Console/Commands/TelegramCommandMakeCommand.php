@@ -3,7 +3,6 @@
 namespace Vanloctech\Telehook\Console\Commands;
 
 use Illuminate\Console\GeneratorCommand;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
 class TelegramCommandMakeCommand extends GeneratorCommand

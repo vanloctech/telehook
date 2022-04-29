@@ -41,6 +41,7 @@ class SetWebhookCommand extends Command
     {
         $telehook = Telehook::init();
         $response = $telehook->deleteWebhook();
+        // todo: moi vo co the khong co webhook
         if ($response['ok']) {
             try {
                 $telehook->telegramApi()->setWebhook(TelehookSupport::getConfig('set_webhook'));

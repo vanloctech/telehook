@@ -4,9 +4,9 @@ namespace Vanloctech\Telehook;
 
 use Illuminate\Support\ServiceProvider;
 use Vanloctech\Telehook\Console\Commands\SetMenuTelegramCommand;
+use Vanloctech\Telehook\Console\Commands\SetWebhookCommand;
 use Vanloctech\Telehook\Console\Commands\StopTelehookConversationCommand;
 use Vanloctech\Telehook\Console\Commands\TelegramCommandMakeCommand;
-use Vanloctech\Telehook\Console\Commands\SetWebhookCommand;
 
 class TelehookServiceProvider extends ServiceProvider
 {
