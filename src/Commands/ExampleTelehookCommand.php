@@ -27,7 +27,13 @@ class ExampleTelehookCommand extends TelehookCommand
         $this->ask('name', 'What\'s your name?');
     }
 
-    public function validate_nameLoc(): bool
+    /**
+     * Validate input of name
+     *
+     * "validate" is the prefix of the validate function, "Name" is argument name
+     * @return bool
+     */
+    public function validateName(): bool
     {
         $firstChar = mb_substr($this->name->value, 0, 1);
         if ($firstChar != mb_strtoupper($firstChar)) {

@@ -31,5 +31,10 @@ class DummyClass extends TelehookCommand
     public function finish()
     {
         // TODO: Implement finish() method for DummyCommand command.
+        // you can see the example in the Vanloctech/Telehook/ExampleTelehook.php file for more usage
+
+        // $this->message() - get message object
+        // $this->message()->chat - get chat object
+        // $this->message()->chat->id - get chat id
     }
 }

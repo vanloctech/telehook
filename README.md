@@ -77,7 +77,6 @@ class HelloWorldTelehookCommand extends TelehookCommand
         // TODO: Implement finish() method.
     }
 }
-
 ```
 
 Add command into telehook config file `config/telehook.php`
