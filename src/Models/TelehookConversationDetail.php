@@ -17,7 +17,7 @@ class TelehookConversationDetail extends Model
         'conversation_id',
         'payload',
         'argument_name',
-        'argument_value',
+        'metadata',
         'type',
     ];
 

@@ -68,6 +68,10 @@ class SetMenuTelegramCommand extends Command
             return 0;
         }
 
+        $this->table(
+            ['command', 'description'],
+            $commandSet
+        );
         $this->info('Set command successfully.');
         return 0;
     }

@@ -33,7 +33,7 @@ class TelehookConversation extends Model
     public function detailsHasArgumentName(): HasMany
     {
         return $this->hasMany(TelehookConversationDetail::class, 'conversation_id')
-            ->select(['id', 'argument_name', 'argument_value'])
+            ->select(['id', 'argument_name', 'metadata'])
             ->where(function (Builder $query) {
                  $query->orWhere('argument_name', '<>', '');
                  $query->orWhereNull('argument_name');

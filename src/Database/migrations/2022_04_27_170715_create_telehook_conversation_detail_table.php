@@ -18,7 +18,7 @@ class CreateTelehookConversationDetailTable extends Migration
             $table->unsignedBigInteger('conversation_id');
             $table->text('message')->nullable();
             $table->string('argument_name')->nullable();
-            $table->string('argument_value')->nullable();
+            $table->text('metadata')->nullable();
             $table->unsignedTinyInteger('type')->nullable()
                 ->default(1)
                 ->comment('1: receive, 2: response');

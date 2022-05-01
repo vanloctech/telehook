@@ -37,10 +37,6 @@ class TelehookServiceProvider extends ServiceProvider
         $this->app->singleton('telehook', function () {
             return new Telehook();
         });
-
-        $this->mergeConfigFrom(
-            __DIR__.'/../config/telehook.php', 'telehook'
-        );
     }
 
     protected function registerRoutes(): void

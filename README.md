@@ -19,7 +19,7 @@ Install package
 composer require vanloctech/telehook
 ```
 
-Publish config file `telehook.php` for project
+Publish config file `telehook.php` and migration files for project
 ```shell
 php artisan vendor:publish --provider="Vanloctech\Telehook\TelehookServiceProvider"
 ```
@@ -39,7 +39,7 @@ protected function schedule(Schedule $schedule)
 // ...
 ```
 
-We also provide a facade for elasticsearch-php client (which has connected using our settings), add following to your `config/app.php` if you need so.
+We also provide a facade for Telehook (which has connected using our settings), add following to your `config/app.php` if you need so.
 ```php
 'aliases' => [
     ...
@@ -48,7 +48,7 @@ We also provide a facade for elasticsearch-php client (which has connected using
 ```
 
 ## Usage
-Create telegram command
+Create telegram command - telehook command
 ```shell
 php artisan make:telehook-command <Command Name>
 # Ex: php artisan make:telehook-command HelloWorld
@@ -57,6 +57,7 @@ php artisan make:telehook-command <Command Name>
 Override code in `finish` function
 ```php
 <?php
+// TelehookCommand/HelloWorldTelehookCommand.php
 
 namespace App\TelehookCommand;
 
@@ -88,13 +89,14 @@ Add command into telehook config file `config/telehook.php`
         ...
         
         // add more your command
-        \App\TelegramCommand\HelloWorldTelehookCommand::class
+        \App\TelehookCommand\HelloWorldTelehookCommand::class
     ],
 ```
 
 using Telehook for send message for multiple chatId
 ```php
-Telehook::init()->setChatId(['custom array chat id'])->sendMessages('your text');
+Telehook::init()->setChatId('<chatId>')->sendMessage('your text');
+Telehook::init()->setChatId(['<array chatId>'])->sendMessages('your text');
 ```
 
 Use more function with `telegramApi` property
@@ -104,7 +106,7 @@ Telehook::init()->telegramApi->sendDocument(...);
 # and more function support call api, referer: https://github.com/irazasyed/telegram-bot-sdk
 ```
 
-Can set webhook with information setup in `config/telehook.php`:
+You can set webhook with information setup in `config/telehook.php`:
 ```php
     /*
     |--------------------------------------------------------------------------
@@ -121,10 +123,10 @@ Can set webhook with information setup in `config/telehook.php`:
     'set_webhook' => [
         'url' => env('APP_URL') . '/' . env('TELEHOOK_TOKEN', '')
             . '/' . env('TELEHOOK_PATH', 'webhook'),
-//        'certificate' => env('TELEHOOK_CERTIFICATE', ''),
-//        'ip_address' => '',
-//        'max_connections' => '',
-//        'allowed_updates' => '',
+        // 'certificate' => env('TELEHOOK_CERTIFICATE', ''),
+        // 'ip_address' => '',
+        // 'max_connections' => '',
+        // 'allowed_updates' => '',
         'drop_pending_updates' => true,
     ],
 ```

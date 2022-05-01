@@ -57,10 +57,10 @@ return [
     'set_webhook' => [
         'url' => env('APP_URL') . '/' . env('TELEHOOK_TOKEN', '')
             . '/' . env('TELEHOOK_PATH', 'webhook'),
-//        'certificate' => env('TELEHOOK_CERTIFICATE', ''),
-//        'ip_address' => '',
-//        'max_connections' => '',
-//        'allowed_updates' => '',
+        // 'certificate' => env('TELEHOOK_CERTIFICATE', ''),
+        // 'ip_address' => '',
+        // 'max_connections' => '',
+        // 'allowed_updates' => '',
         'drop_pending_updates' => true,
     ],
 
@@ -75,16 +75,6 @@ return [
     |
     */
     'unknown_message' => 'Unknown {command} command, try /help to see a list of commands {command}',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Busy message
-    |--------------------------------------------------------------------------
-    |
-    | Message response when exception throw
-    |
-    */
-    'busy_message' => 'Webhook is busy',
 
     /*
     |--------------------------------------------------------------------------
@@ -155,9 +145,12 @@ return [
     */
     'commands' => [
         HelpTelehookCommand::class,
-        ExampleTelehookCommand::class,
+        ExampleTelehookCommand::class, // example code telehook command
 
-        // add more your command
+        /*
+         * Your TelehookCommand
+         */
+
     ],
 
 ];
