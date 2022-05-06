@@ -179,7 +179,7 @@ abstract class TelehookCommand
                 'name' => $argumentName,
                 'value' => $this->message()->text,
             ]);
-            $functionName = self::FUNCTION_NAME_VALIDATE . Str::ucfirst($argumentName);
+            $functionName = self::FUNCTION_NAME_VALIDATE . Str::ucfirst(Str::camel($argumentName));
 
             if (method_exists($this, $functionName)) {
                 if (!$this->$functionName()) {
