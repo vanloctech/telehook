@@ -174,6 +174,7 @@ abstract class TelehookCommand
         }
 
         try {
+            $this->mappingArguments();
             $argumentName = $this->conversation->next_argument_name;
             $this->$argumentName = new TelehookArgument([
                 'name' => $argumentName,
@@ -348,6 +349,13 @@ abstract class TelehookCommand
      */
     protected function finishing()
     {
+        $this->mappingArguments();
+
+        $this->conversation->update(['status' => TelehookConversation::STATUS_FINISH]);
+    }
+
+    public function mappingArguments()
+    {
         $details = $this->conversation->detailsHasArgumentName;
 
         foreach ($details as $item) {
@@ -355,8 +363,6 @@ abstract class TelehookCommand
             $metadata = json_decode($item->metadata ?? '{}', true);
             $this->$argName = new TelehookArgument($metadata);
         }
-
-        $this->conversation->update(['status' => TelehookConversation::STATUS_FINISH]);
     }
 
     /**
