@@ -3,6 +3,7 @@
 namespace Vanloctech\Telehook\Commands;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Telegram\Bot\Objects\Message;
 use Vanloctech\Telehook\AskTrait;
@@ -134,16 +135,16 @@ abstract class TelehookCommand
      */
     public function handle()
     {
-        if ($this->isStop()) {
-            $this->stopping();
+        try {
+            if ($this->isStop()) {
+                $this->stopping();
 
-            $this->stop();
+                $this->stop();
 
-            return 0;
-        }
-        // check null for conversation will create new conversation and execute first function sendQuestion
-        if (empty($this->conversation)) {
-            try {
+                return 0;
+            }
+            // check null for conversation will create new conversation and execute first function sendQuestion
+            if (empty($this->conversation)) {
                 $this->setConversation($this->start());
                 $functionName = self::FUNCTION_NAME_ASK . $this->conversation->next_order_send_question;
 
@@ -156,24 +157,8 @@ abstract class TelehookCommand
                 $this->finish();
 
                 return 0;
-            } catch (\Throwable $exception) {
-                report($exception);
-                Telehook::init()
-                    ->setChatId($this->message()->chat->id)
-                    ->sendMessage('An error occurred');
-
-                if (app()->environment(['local', 'staging'])) {
-                    Telehook::init()
-                        ->setChatId($this->message()->chat->id)
-                        ->sendMessage($exception->getMessage() . ' at ' . $exception->getFile() . ':' . $exception->getLine());
-                }
-
-                $this->stopping();
-                return 0;
             }
-        }
 
-        try {
             $argumentName = $this->conversation->next_argument_name;
             $this->$argumentName = new TelehookArgument([
                 'name' => $argumentName,
@@ -285,30 +270,21 @@ abstract class TelehookCommand
      */
     protected function storeAnswer()
     {
-        DB::beginTransaction();
-        try {
-            $this->conversation->update([
-                'next_order_send_question' => $this->conversation->next_order_send_question + 1,
-                'status' => TelehookConversation::STATUS_CHATTING,
+        $this->conversation->update([
+            'next_order_send_question' => $this->conversation->next_order_send_question + 1,
+            'status' => TelehookConversation::STATUS_CHATTING,
+        ]);
+
+        if (!empty($this->conversation->next_argument_name)) {
+            // create new record for detail conversation to set argument name and argument value
+            TelehookConversationDetail::query()->create([
+                'conversation_id' => $this->conversation->id,
+                'message' => $this->message()->text,
+                'payload' => json_encode($this->message->all()),
+                'argument_name' => $this->conversation->next_argument_name,
+                'metadata' => json_encode($this->getMetadata()),
+                'type' => TelehookConversationDetail::TYPE_RECEIVE,
             ]);
-
-            if (!empty($this->conversation->next_argument_name)) {
-                // create new record for detail conversation to set argument name and argument value
-                TelehookConversationDetail::query()->create([
-                    'conversation_id' => $this->conversation->id,
-                    'message' => $this->message()->text,
-                    'payload' => json_encode($this->message->all()),
-                    'argument_name' => $this->conversation->next_argument_name,
-                    'metadata' => json_encode($this->getMetadata()),
-                    'type' => TelehookConversationDetail::TYPE_RECEIVE,
-                ]);
-            }
-
-            DB::commit();
-        } catch (\Throwable $exception) {
-            DB::rollBack();
-
-            throw new \Exception($exception->getMessage());
         }
     }
 
@@ -324,21 +300,12 @@ abstract class TelehookCommand
             return $this->getMetadataByMessageTypeText();
         }
 
-        return [];
-    }
+        if ($this->message()->isType('photo')) {
 
-    /**
-     * Format metadata for message type text
-     *
-     * @return array
-     */
-    protected function getMetadataByMessageTypeText(): array
-    {
-        return [
-            'name' => $this->conversation->next_argument_name,
-            'value' => trim($this->message()->text),
-            'type' => 'text',
-        ];
+            return $this->getMetadataByMessageTypePhoto();
+        }
+
+        return [];
     }
 
     /**
@@ -378,4 +345,46 @@ abstract class TelehookCommand
      * @return void
      */
     abstract public function finish();
+
+    /**
+     * Format metadata for message type text
+     *
+     * @return array
+     */
+    protected function getMetadataByMessageTypeText(): array
+    {
+        return [
+            'name' => $this->conversation->next_argument_name,
+            'value' => trim($this->message()->text),
+            'type' => 'text',
+        ];
+    }
+
+    /**
+     * Format metadata for message type text
+     *
+     * @return array
+     */
+    protected function getMetadataByMessageTypePhoto(): array
+    {
+        $photo = Telehook::init()->telegramApi()->getFile([
+            'file_id' => $this->message()->photo->last()['file_id'],
+        ]);
+
+        $filePath = $photo->filePath;
+        $filePath = 'https://api.telegram.org/file/bot' . TelehookSupport::getConfig('token') . '/' . $filePath;
+
+        $file = file_get_contents($filePath);
+        $pathFile = 'telehook/photos/' . $this->message()->chat->id . '_' . time() . '.jpeg';
+        Storage::disk('public')->put($pathFile, $file);
+
+        return [
+            'name' => $this->conversation->next_argument_name,
+            'value' => $pathFile,
+            'disk' => 'public',
+            'size' => round($photo->fileSize / 1024),
+            'unit' => 'KB',
+            'type' => 'photo',
+        ];
+    }
 }

@@ -41,8 +41,11 @@ class TelehookSupport
 
             return false;
         }
-        if (!$message->isType('text')) {
-            // handle for group with "my_chat_member"
+        if (
+            !$message->isType('text') &&
+            !$message->isType('photo')
+        ) {
+            logs()->error('cc');
             return false;
         }
 

@@ -31,9 +31,4 @@ trait AskTrait
             }
         }
     }
-
-//    public function askPhoto(string $argumentName, string $message)
-//    {
-//
-//    }
 }
