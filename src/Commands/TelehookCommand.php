@@ -44,9 +44,15 @@ abstract class TelehookCommand
      */
     protected $isStop = false;
 
+    /**
+     * @var Telehook telehook instance
+     */
+    protected $telehook;
+
     public function __construct($message = null)
     {
         $this->message = $message;
+        $this->telehook = Telehook::init($this->message()->chat->id);
     }
 
     /**
@@ -184,6 +190,14 @@ abstract class TelehookCommand
 
             if (method_exists($this, $functionName)) {
                 if (!$this->$functionName()) {
+                    if ($this->isStop()) {
+                        $this->stopping();
+
+                        $this->stop();
+
+                        return 0;
+                    }
+
                     return 0;
                 }
             }
