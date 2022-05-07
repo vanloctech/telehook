@@ -47,12 +47,14 @@ abstract class TelehookCommand
     /**
      * @var Telehook telehook instance
      */
-    protected $telehook;
+    protected $telehook = null;
 
     public function __construct($message = null)
     {
         $this->message = $message;
-        $this->telehook = Telehook::init($this->message()->chat->id);
+        if (!empty($this->message())) {
+            $this->telehook = Telehook::init($this->message()->chat->id);
+        }
     }
 
     /**
