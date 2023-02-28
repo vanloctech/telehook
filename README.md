@@ -1,6 +1,6 @@
 # Telehook Laravel
 
-_Telegram bot command for Laravel_
+_Telegram bot command like conversation for Laravel_
 
 ## DEMO
 
