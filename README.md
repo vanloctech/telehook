@@ -4,7 +4,7 @@ _Telegram bot command like conversation for Laravel_
 
 ## DEMO
 
-![demo telehook](https://github.com/vanloctech/telehook/blob/master/telehook-demo.gif?raw=true)
+https://user-images.githubusercontent.com/20141611/224770232-a8681de5-b6e2-46e4-b4cc-b4088ce155a5.mp4
 
 ## Requirement
 - Laravel framework >= 5.8
