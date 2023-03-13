@@ -22,22 +22,34 @@ class TelehookConversation extends Model
         'command_class',
         'status',
         'next_argument_name',
+        'next_argument_type',
+        'next_argument_options',
         'created_at_bigint',
     ];
 
+    /**
+     * Details of conversation
+     *
+     * @return HasMany
+     */
     public function details(): HasMany
     {
         return $this->hasMany(TelehookConversationDetail::class, 'conversation_id');
     }
 
-    public function detailsHasArgumentName(): HasMany
+    /**
+     * @return Builder[]|\Illuminate\Database\Eloquent\Collection|TelehookConversationDetail[]
+     */
+    public function detailsHasArgumentName()
     {
-        return $this->hasMany(TelehookConversationDetail::class, 'conversation_id')
+        return TelehookConversationDetail::query()
             ->select(['id', 'argument_name', 'metadata'])
+            ->where('conversation_id', $this->id)
             ->where(function (Builder $query) {
                  $query->orWhere('argument_name', '<>', '');
-                 $query->orWhereNull('argument_name');
-            });
+                 $query->orWhereNotNull('argument_name');
+            })
+            ->get();
     }
 
     /**
@@ -63,5 +75,19 @@ class TelehookConversation extends Model
             self::STATUS_START,
             self::STATUS_CHATTING,
         ];
+    }
+
+    /**
+     * Get argument `options`
+     *
+     * @return array|mixed
+     */
+    public function getArgumentOptionsAttribute()
+    {
+        if (empty($this->next_argument_options)) {
+            return [];
+        }
+
+        return json_decode($this->next_argument_options, true);
     }
 }

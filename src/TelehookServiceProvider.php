@@ -3,6 +3,7 @@
 namespace Vanloctech\Telehook;
 
 use Illuminate\Support\ServiceProvider;
+use Vanloctech\Telehook\Console\Commands\ClearTelehookConversationCommand;
 use Vanloctech\Telehook\Console\Commands\SetMenuTelegramCommand;
 use Vanloctech\Telehook\Console\Commands\SetWebhookCommand;
 use Vanloctech\Telehook\Console\Commands\StopTelehookConversationCommand;
@@ -20,6 +21,7 @@ class TelehookServiceProvider extends ServiceProvider
         $this->registerRoutes();
         $this->registerMigrations();
         $this->registerPublishing();
+        $this->registerTranslation();
     }
 
     /**
@@ -64,6 +66,7 @@ class TelehookServiceProvider extends ServiceProvider
                 SetMenuTelegramCommand::class,
                 SetWebhookCommand::class,
                 StopTelehookConversationCommand::class,
+                ClearTelehookConversationCommand::class,
             ]);
         }
     }
@@ -83,6 +86,18 @@ class TelehookServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../config/telehook.php' => config_path('telehook.php'),
             ], 'telehook-config');
+
+            $this->publishes([
+                __DIR__.'/../Resources/lang' => resource_path('lang/vendor/telehook'),
+            ]);
         }
+    }
+
+    /**
+     * @return void
+     */
+    private function registerTranslation()
+    {
+        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'telehook');
     }
 }

@@ -19,8 +19,14 @@ class TelehookConversationDetail extends Model
         'argument_name',
         'metadata',
         'type',
+        'argument_type',
     ];
 
+    /**
+     * Conversation of detail
+     *
+     * @return BelongsTo
+     */
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(TelehookConversation::class, 'conversation_id');

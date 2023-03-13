@@ -4,6 +4,7 @@ namespace Vanloctech\Telehook;
 
 use Telegram\Bot\Objects\Message;
 use Vanloctech\Telehook\Commands\DefaultTelehookCommand;
+use Vanloctech\Telehook\Commands\TelehookCommand;
 
 class TelehookSupport
 {
@@ -29,6 +30,8 @@ class TelehookSupport
     }
 
     /**
+     * Check message does not support
+     *
      * @param Message $message
      * @return bool
      */
@@ -41,8 +44,16 @@ class TelehookSupport
 
             return false;
         }
-        if (!$message->isType('text')) {
-            // handle for group with "my_chat_member"
+
+        $flag = false;
+        foreach (self::typesSupport() as $type) {
+            if ($message->isType($type)) {
+                $flag = true;
+                break;
+            }
+        }
+
+        if (!$flag) {
             return false;
         }
 
@@ -63,7 +74,8 @@ class TelehookSupport
      * @param string $className
      * @param string $commandName
      * @param Message $message
-     * @return mixed|null instance class or null
+     * @param bool $isInstance
+     * @return TelehookCommand|mixed|null instance class or null
      */
     public static function checkCommandName(string $className, string $commandName, Message $message, $isInstance = true)
     {
@@ -85,10 +97,45 @@ class TelehookSupport
      * Get config of telehook by key
      *
      * @param string $key
+     * @param null $default
      * @return mixed
      */
     public static function getConfig(string $key, $default = null)
     {
         return config('telehook.' . $key, $default);
+    }
+
+    /**
+     * Type allows message
+     *
+     * @return array
+     */
+    public static function typesSupport(): array
+    {
+        return [
+            TelehookArgument::TYPE_TEXT,
+            TelehookArgument::TYPE_PHOTO,
+            TelehookArgument::TYPE_VIDEO,
+            TelehookArgument::TYPE_ANIMATION,
+            TelehookArgument::TYPE_AUDIO,
+            TelehookArgument::TYPE_DOCUMENT,
+            TelehookArgument::TYPE_LOCATION,
+            TelehookArgument::TYPE_CONTACT,
+            TelehookArgument::TYPE_VOICE,
+        ];
+    }
+
+    /**
+     * Send exception with local or stagin environment
+     *
+     * @param $chatId
+     * @param \Throwable $exception
+     * @return void
+     */
+    public static function sendException($chatId, \Throwable $exception)
+    {
+        if (app()->environment(['local', 'staging'])) {
+            Telehook::init($chatId)->sendMessage($exception->getMessage() . ' at ' . $exception->getFile() . ':' . $exception->getLine());
+        }
     }
 }

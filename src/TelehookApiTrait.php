@@ -4,6 +4,8 @@ namespace Vanloctech\Telehook;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 trait TelehookApiTrait
 {
@@ -154,4 +156,22 @@ trait TelehookApiTrait
             return json_decode($exception->getResponse(), true);
         }
     }
+
+    /**
+     * Magic function call send some media
+     *
+     * @param $method
+     * @param $arguments
+     * @return void
+     */
+    public function __call($method, $arguments)
+    {
+        if (Str::startsWith($method, 'send')) {
+            $data = Arr::first($arguments);
+            $data['chat_id'] = $this->chatId;
+
+            $this->telegramApi()->$method($data);
+        }
+    }
+
 }

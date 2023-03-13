@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Telegram\Bot\Objects\Message;
 use Vanloctech\Telehook\Commands\DefaultTelehookCommand;
 use Vanloctech\Telehook\Commands\StopTelehookCommand;
+use Vanloctech\Telehook\Commands\TelehookCommand;
 use Vanloctech\Telehook\Models\TelehookConversation;
 use Vanloctech\Telehook\TelehookSupport;
 
@@ -21,7 +22,15 @@ class TelehookController extends Controller
     {
         try {
             $commands = TelehookSupport::getConfig('commands', []);
+
+            /**
+             * @var TelehookCommand|mixed $defaultClass
+             */
             $defaultClass = TelehookSupport::getConfig('default', DefaultTelehookCommand::class);
+
+            /**
+             * @var TelehookCommand|mixed $stopClass
+             */
             $stopClass = TelehookSupport::getConfig('stop', StopTelehookCommand::class);
 
             logs('daily')->debug(json_encode($request->all()));
@@ -49,6 +58,12 @@ class TelehookController extends Controller
                         $commandClass = new $commandClass($message);
                     }
                     $commandClass->setConversation($conversation);
+
+                    if (!$message->isType($conversation->next_argument_type) && !$commandClass->isStop()) {
+                        $commandClass = new $defaultClass($message);
+                        $commandClass->typeNotMatch();
+                        return $this->responseSuccess();
+                    }
                 } else {
                     $commandClass = new $defaultClass($message);
                     $commandClass->unknown();
@@ -63,7 +78,6 @@ class TelehookController extends Controller
             }
 
             if (empty($commandClass)) {
-                // todo: handle unknown command
                 $commandClass = new $defaultClass($message);
                 $commandClass->unknown();
                 return $this->responseSuccess();
@@ -74,6 +88,7 @@ class TelehookController extends Controller
             return $this->responseSuccess();
         } catch (\Throwable $exception) {
             report($exception);
+            TelehookSupport::sendException($message->chat->id, $exception);
 
             return $this->responseSuccess();
         }
