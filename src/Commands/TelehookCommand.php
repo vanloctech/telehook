@@ -10,6 +10,7 @@ use Vanloctech\Telehook\Models\TelehookConversation;
 use Vanloctech\Telehook\Models\TelehookConversationDetail;
 use Vanloctech\Telehook\Telehook;
 use Vanloctech\Telehook\TelehookArgument;
+use Vanloctech\Telehook\TelehookMetadata;
 use Vanloctech\Telehook\TelehookSupport;
 
 abstract class TelehookCommand
@@ -18,11 +19,12 @@ abstract class TelehookCommand
 
     const FUNCTION_NAME_ASK = 'sendQuestion';
     const FUNCTION_NAME_VALIDATE = 'validate';
+    const FUNCTION_NAME_BEFORE_STORE_ANSWER = 'beforeStoreAnswer';
 
     /**
      * @var Message|null|mixed Message receive from telegram
      */
-    protected $message = null;
+    private $message = null;
 
     /**
      * @var string Command name
@@ -64,11 +66,16 @@ abstract class TelehookCommand
      */
     public function unknown()
     {
-        $command = $this->getCommandName(true);
-
-        $message = TelehookSupport::replaceKeyWithText('{command}', $command, TelehookSupport::getConfig('unknown_message'));
+        $message = trans('telehook::messages.unknown_command');
 
         return Telehook::init($this->message->chat->id)->sendMessage($message);
+    }
+
+    public function typeNotMatch()
+    {
+        $message = trans('telehook::messages.type_not_match');
+
+        return $this->telehook->sendMessage($message);
     }
 
     /**
@@ -78,7 +85,7 @@ abstract class TelehookCommand
      */
     public function doesntSupportChatType()
     {
-        $message = TelehookSupport::getConfig('doesnt_support_chat_type_message');
+        $message = trans('telehook::messages.doesnt_support_chat_type');
 
         return Telehook::init($this->message->chat->id)->sendMessage($message);
     }
@@ -170,11 +177,7 @@ abstract class TelehookCommand
                     ->setChatId($this->message()->chat->id)
                     ->sendMessage('An error occurred');
 
-                if (app()->environment(['local', 'staging'])) {
-                    Telehook::init()
-                        ->setChatId($this->message()->chat->id)
-                        ->sendMessage($exception->getMessage() . ' at ' . $exception->getFile() . ':' . $exception->getLine());
-                }
+                TelehookSupport::sendException($this->message()->chat->id, $exception);
 
                 $this->stopping();
                 return 0;
@@ -184,10 +187,9 @@ abstract class TelehookCommand
         try {
             $this->mappingArguments();
             $argumentName = $this->conversation->next_argument_name;
-            $this->$argumentName = new TelehookArgument([
-                'name' => $argumentName,
-                'value' => $this->message()->text,
-            ]);
+            $metadata = new TelehookMetadata($argumentName, $this->message());
+            $metadata->setDirectory($this->conversation->argument_options['dir'] ?? null);
+            $this->$argumentName = new TelehookArgument($metadata->get());
             $functionName = self::FUNCTION_NAME_VALIDATE . Str::ucfirst(Str::camel($argumentName));
 
             if (method_exists($this, $functionName)) {
@@ -204,6 +206,11 @@ abstract class TelehookCommand
                 }
             }
 
+            $functionName = self::FUNCTION_NAME_BEFORE_STORE_ANSWER . Str::ucfirst(Str::camel($argumentName));
+            if (method_exists($this, $functionName)) {
+                $this->$functionName();
+            }
+
             $this->storeAnswer();
 
             $functionName = self::FUNCTION_NAME_ASK . ($this->conversation->next_order_send_question);
@@ -215,6 +222,7 @@ abstract class TelehookCommand
             }
 
             $this->finishing();
+            $this->beforeFinish();
             $this->finish();
 
             return 0;
@@ -224,11 +232,7 @@ abstract class TelehookCommand
                 ->setChatId($this->message()->chat->id)
                 ->sendMessage('An error occurred');
 
-            if (app()->environment(['local', 'staging'])) {
-                Telehook::init()
-                    ->setChatId($this->message()->chat->id)
-                    ->sendMessage($exception->getMessage() . ' at ' . $exception->getFile() . ':' . $exception->getLine());
-            }
+            TelehookSupport::sendException($this->message()->chat->id, $exception);
 
             $this->stopping();
             return 0;
@@ -240,7 +244,7 @@ abstract class TelehookCommand
      *
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|null
      */
-    protected function start()
+    private function start()
     {
         DB::beginTransaction();
         try {
@@ -278,7 +282,7 @@ abstract class TelehookCommand
      * Change status of conversation to stop
      * @return void
      */
-    public function stopping()
+    private function stopping()
     {
         $this->conversation->update([
             'status' => TelehookConversation::STATUS_STOP,
@@ -300,7 +304,7 @@ abstract class TelehookCommand
      *
      * @throws \Exception
      */
-    protected function storeAnswer()
+    private function storeAnswer()
     {
         DB::beginTransaction();
         try {
@@ -318,6 +322,7 @@ abstract class TelehookCommand
                     'argument_name' => $this->conversation->next_argument_name,
                     'metadata' => json_encode($this->getMetadata()),
                     'type' => TelehookConversationDetail::TYPE_RECEIVE,
+                    'argument_type' => $this->conversation->next_argument_type,
                 ]);
             }
 
@@ -330,32 +335,16 @@ abstract class TelehookCommand
     }
 
     /**
-     * Get metadata
+     * Get metadata and store file if exists
      *
      * @return array
      */
-    protected function getMetadata(): array
+    private function getMetadata(): array
     {
-        if ($this->message()->isType('text')) {
+        $metadata = new TelehookMetadata($this->conversation->next_argument_name, $this->message());
+        $metadata->setDirectory($this->conversation->argument_options['dir'] ?? null);
 
-            return $this->getMetadataByMessageTypeText();
-        }
-
-        return [];
-    }
-
-    /**
-     * Format metadata for message type text
-     *
-     * @return array
-     */
-    protected function getMetadataByMessageTypeText(): array
-    {
-        return [
-            'name' => $this->conversation->next_argument_name,
-            'value' => trim($this->message()->text),
-            'type' => 'text',
-        ];
+        return $metadata->setStoreFile(true)->get();
     }
 
     /**
@@ -363,16 +352,16 @@ abstract class TelehookCommand
      *
      * @return void
      */
-    protected function finishing()
+    private function finishing()
     {
         $this->mappingArguments();
 
         $this->conversation->update(['status' => TelehookConversation::STATUS_FINISH]);
     }
 
-    public function mappingArguments()
+    private function mappingArguments()
     {
-        $details = $this->conversation->detailsHasArgumentName;
+        $details = $this->conversation->detailsHasArgumentName();
 
         foreach ($details as $item) {
             $argName = $item->argument_name;
@@ -383,15 +372,23 @@ abstract class TelehookCommand
 
     /**
      * @param $key
-     * @return null
+     * @return null|TelehookArgument|mixed
      */
     public function __get($key)
     {
         if (!in_array($key, ['message', 'conversation', 'command', 'description'])) {
+            /**
+             * @var TelehookArgument
+             */
             return $this->$key ?? null;
         }
 
-        return null;
+        return $this->$key ?? null;
+    }
+
+    public function beforeFinish()
+    {
+        // override for handle or send message before finish conversation;
     }
 
     /**

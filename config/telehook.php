@@ -9,17 +9,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Telegram bot api URL
-    |--------------------------------------------------------------------------
-    |
-    | All queries to the Telegram Bot API must be served over HTTPS
-    | and need to be presented
-    |
-    */
-    'api_url' => 'https://api.telegram.org/bot',
-
-    /*
-    |--------------------------------------------------------------------------
     | Unique authentication token of telegram bot
     |--------------------------------------------------------------------------
     |
@@ -66,30 +55,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Unknown message response
-    |--------------------------------------------------------------------------
-    |
-    | Message response to the user when the command
-    | is not syntactically correct (not defined in the system)
-    | You can use "{command}" for represent the name of command
-    |
-    */
-    'unknown_message' => 'Unknown {command} command, try /help to see a list of commands {command}',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Missing argument message response
-    |--------------------------------------------------------------------------
-    |
-    | Message response to the user when the command
-    | does not have enough predefined input parameters.
-    | You can use "{command}" for represent the name of command
-    |
-    */
-    'doesnt_support_chat_type_message' => 'Bot doesn\'t support chat from "group" and "channel"',
-
-    /*
-    |--------------------------------------------------------------------------
     | Class handle unknown command, doesn't support chat type
     |--------------------------------------------------------------------------
     |
@@ -128,6 +93,17 @@ return [
     |
     */
     'limited_time_conversation' => 10,
+
+    /*
+    |--------------------------------------------------------------------------
+    | The number of days for which conversations must be kept.
+    |--------------------------------------------------------------------------
+    |
+    | When the chat finishes are greater than the number of days configured,
+    | command `telehook:clear` will delete it in the database
+    |
+    */
+    'keep_conversations_finished_for_days' => 5,
 
     /*
     |--------------------------------------------------------------------------
