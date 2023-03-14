@@ -8,6 +8,7 @@ use Telegram\Bot\Objects\Message;
 use Vanloctech\Telehook\AskTrait;
 use Vanloctech\Telehook\Models\TelehookConversation;
 use Vanloctech\Telehook\Models\TelehookConversationDetail;
+use Vanloctech\Telehook\Models\TelehookUser;
 use Vanloctech\Telehook\Telehook;
 use Vanloctech\Telehook\TelehookArgument;
 use Vanloctech\Telehook\TelehookMetadata;
@@ -269,6 +270,9 @@ abstract class TelehookCommand
             ]);
 
             DB::commit();
+
+            $this->createUser();
+
             return $conversation;
         } catch (\Throwable $exception) {
             report($exception);
@@ -276,6 +280,22 @@ abstract class TelehookCommand
 
             return null;
         }
+    }
+
+    private function createUser()
+    {
+        return TelehookUser::query()->firstOrCreate(
+            ['id' => $this->message()->chat->id],
+            [
+                'uuid' => Str::uuid(),
+                'first_name' => $this->message()->chat->firstName ?? null,
+                'last_name' => $this->message()->chat->lastName ?? null,
+                'username' => $this->message()->chat->username ?? null,
+                'is_bot' => $this->message()->from->isBot ? TelehookUser::IS_BOT_TRUE : TelehookUser::IS_BOT_FALSE,
+                'language_code' => $this->message()->from->languageCode ?? 'en',
+                'type' => $this->message()->chat->type ?? null,
+            ]
+        );
     }
 
     /**
