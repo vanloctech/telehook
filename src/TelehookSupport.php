@@ -3,32 +3,10 @@
 namespace Vanloctech\Telehook;
 
 use Telegram\Bot\Objects\Message;
-use Vanloctech\Telehook\Commands\DefaultTelehookCommand;
 use Vanloctech\Telehook\Commands\TelehookCommand;
 
 class TelehookSupport
 {
-    /**
-     * Convert key into plain text
-     *
-     * @param string $search
-     * @param string $replace
-     * @param string $subject
-     * @return string
-     */
-    public static function replaceKeyWithText(string $search, string $replace, string $subject): string
-    {
-        $segments = explode($search, $subject);
-
-        $result = array_shift($segments);
-
-        foreach ($segments as $segment) {
-            $result .= $replace . $segment;
-        }
-
-        return $result;
-    }
-
     /**
      * Check message does not support
      *
@@ -37,10 +15,7 @@ class TelehookSupport
      */
     public static function checkMessageDoesntSupport(Message $message): bool
     {
-        $defaultClass = config('telehook.default', DefaultTelehookCommand::class);
         if (in_array($message->chat->type, ['group', 'channel', 'supergroup'])) {
-            $commandClass = new $defaultClass($message);
-            $commandClass->doesntSupportChatType();
 
             return false;
         }
