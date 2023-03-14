@@ -7,8 +7,8 @@ _Telegram bot command like conversation for Laravel_
 https://user-images.githubusercontent.com/20141611/224770232-a8681de5-b6e2-46e4-b4cc-b4088ce155a5.mp4
 
 ## Requirement
-- Laravel framework >= 5.8
-- PHP >= 7.2
+- Laravel framework >= 5.8 and up
+- PHP >= 7.3
 
 ## Reporting Issues
 
@@ -23,14 +23,14 @@ Install package
 composer require vanloctech/telehook
 ```
 
-Publish config file `telehook.php` and migration files for project
+Publish config file `telehook.php`, migration files, translations file for project
 ```shell
 php artisan vendor:publish --provider="Vanloctech\Telehook\TelehookServiceProvider"
 ```
 
 Execute command in schedule for run every minute to stop conversation exceed the time limit
 ```php
-// in app/Console/Kernel.php
+// app/Console/Kernel.php
 
 // ...
 
@@ -45,6 +45,8 @@ protected function schedule(Schedule $schedule)
 
 We also provide a facade for Telehook (which has connected using our settings), add following to your `config/app.php` if you need so.
 ```php
+// config/app.php
+
 'aliases' => [
     ...
     'Telehook' => \Vanloctech\Telehook\Facades\TelehookFacade::class,
@@ -87,6 +89,7 @@ Add command into telehook config file `config/telehook.php`
 
 ```php
 // config/telehook.php
+
     'commands' => [
         HelpTelehookCommand::class,
         ...
@@ -104,24 +107,40 @@ Telehook::init()->setChatId(['<array chatId>'])->sendMessages('your text');
 
 Use more function with `telegramApi` property
 ```php
-Telehook::init()->telegramApi->sendPhoto(...);
-Telehook::init()->telegramApi->sendDocument(...);
+// any files
+
+Telehook::init('<chat_id>')->telegramApi->sendPhoto(...);
+Telehook::init('<chat_id>')->telegramApi->sendDocument(...);
 # and more function support call api, referer: https://github.com/irazasyed/telegram-bot-sdk
+# <chat_id> you can get in `telehook_users` table through `TelehookUser` model
 ```
 
-You can set webhook with information setup in `config/telehook.php`:
+### How to setup in the project
+Declare **https** `URL` in `.env` file (`APP_URL`), (because telegram webhook requires **https**):
+
+**You can use ngrok ([https://ngrok.com](https://ngrok.com)) to make `https` URL
+
+```dotenv
+# .env
+
+APP_URL=https://<your app url>
+```
+
+Next, you can set webhook with information setup in `config/telehook.php` or setup in `.env` file:
 ```php
+// config/telehook.php
+
+    /*
+    |--------------------------------------------------------------------------
+    | Unique authentication token of telegram bot
+    |--------------------------------------------------------------------------
+    */
+    'token' => env('TELEHOOK_TOKEN', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Set webhook parameters
     |--------------------------------------------------------------------------
-    |
-    | specify a url and receive incoming updates via an outgoing webhook.
-    | Whenever there is an update for the bot, we will send an HTTPS POST
-    | request to the specified url
-    | You can set webhook through command is
-    | "php artisan telehook:set-webhook"
-    |
     */
     'set_webhook' => [
         'url' => env('APP_URL') . '/' . env('TELEHOOK_TOKEN', '')
@@ -137,10 +156,37 @@ You can set webhook with information setup in `config/telehook.php`:
 And run command to set webhook:
 ```shell
 php artisan telehook:set-webhook
+
+# output example
+Your URI webhook: https://<your url webhook>
+Set webhook successfully.
 ```
 
 Command set menu command (list of bot's command):
 ```shell
 php artisan telehook:set-command
+
+# output example
++---------+-----------------------------------+
+| command | description                       |
++---------+-----------------------------------+
+| help    | Display list of the bot's command |
+| example | Example command                   |
+| stop    | Stop conversation                 |
++---------+-----------------------------------+
 ```
 
+You can setup a schedule for clear conversation finished:
+```php
+// app/Console/Kernel.php
+
+// ...
+
+protected function schedule(Schedule $schedule)
+{
+    // ...
+    $schedule->command('telehook:clear --chunk=1000')->dailyAt('01:00');
+}
+
+// ...
+```
